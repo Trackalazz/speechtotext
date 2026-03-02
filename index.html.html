@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Speech to Text</title>
+    <style>
+        body { font-family: sans-serif; }
+        #commentBox { width: 80%; margin: 20px auto; border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>Speech to Text</h1>
+    <p>Click the button to start listening.</p>
+    <button id="startButton">Start Listening</button>
+    <div id="output"></div>
+
+    <div id="commentBox"></div>
+
+    <br>
+    <button id="copyButton">Copy Text</button>
+    <button id="pauseButton">Pause Recording</button>
+    <button id="stopButton">Stop Recording</button>
+    <button id="clearButton">Clear Content</button>
+
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const outputDiv = document.getElementById('output');
+        const commentBox = document.getElementById('commentBox');
+        const copyButton = document.getElementById('copyButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const stopButton = document.getElementById('stopButton');
+        const clearButton = document.getElementById('clearButton');
+
+        // Create a new SpeechRecognition object
+        const recognition = new webkitSpeechRecognition(); // Use webkit for broader compatibility
+        recognition.continuous = true;
+        recognition.lang = 'es-ES'; // Set language to Spanish (you can change this)
+        recognition.interimResults = false;
+
+        let isRecording = false;
+
+
+        startButton.addEventListener('click', () => {
+            if (!isRecording) {
+                recognition.start();
+                startButton.textContent = "Stop Listening";
+                isRecording = true;
+            } else {
+                recognition.stop();
+                startButton.textContent = "Start Listening";
+                isRecording = false;
+            }
+        });
+
+        recognition.addEventListener('result', (event) => {
+            let transcript = event.results[0].transcript;
+            commentBox.innerHTML += '<p>' + transcript + '</p>';
+            outputDiv.innerHTML += '<p>' + transcript + '</p>'; // Display in output div too
+        });
+
+        recognition.addEventListener('error', (event) => {
+            console.error("Speech recognition error:", event);
+            commentBox.innerHTML += '<p>Error: Speech recognition failed.</p>';
+            outputDiv.innerHTML += '<p>Error: Speech recognition failed.</p>';
+            startButton.textContent = "Start Listening";
+        });
+
+        pauseButton.addEventListener('click', () => {
+            recognition.stop();
+            isRecording = false;
+            pauseButton.textContent = "Resume Recording";
+            stopButton.disabled = false; // Enable stop button when paused
+        });
+
+        pauseButton.addEventListener('click', () => {
+            recognition.resume();
+            isRecording = true;
+            pauseButton.textContent = "Pause Recording";
+            stopButton.disabled = false;
+        });
+
+
+        stopButton.addEventListener('click', () => {
+            recognition.stop();
+            isRecording = false;
+            startButton.textContent = "Start Listening";
+            pauseButton.textContent = "Pause Recording";
+            stopButton.disabled = true; // Disable stop button when stopped
+        });
+
+        clearButton.addEventListener('click', () => {
+            commentBox.innerHTML = '';
+            outputDiv.innerHTML = '';
+        });
+
+        copyButton.addEventListener('click', () => {
+            const textToCopy = commentBox.innerText;
+            navigator.clipboard.writeText(textToCopy);
+            alert("Text copied to clipboard!");
+        });
+
+
+    </script>
+</body>
+</html>
